@@ -1,0 +1,42 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: classicx_db
+    restart: unless-stopped
+    command: >
+      --lower_case_table_names=1 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_connections=1000 --wait_timeout=60 --interactive_timeout=60
+    environment:
+      MYSQL_DATABASE: bd_classicx
+      MYSQL_USER: classicx
+      MYSQL_PASSWORD: "classicx"
+      MYSQL_ROOT_PASSWORD: "classicx"
+    volumes:
+      - ./dbdata:/var/lib/mysql
+      - ./database_setup.sql:/docker-entrypoint-initdb.d/001-classicx.sql:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-pclassicx" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    image: ghcr.io/guimaraeslucas/axonasp@sha256:d5bfe96437a4658c200576382b15b8b5955e7313997725a7c6ab886c3256f17f
+    container_name: classicx_web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../app:/app
+      - ./axonasp.toml:/opt/axonasp/config/axonasp.toml:ro
+    ports:
+      - "8000:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/App/Controllers/Home/HomeController.asp > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

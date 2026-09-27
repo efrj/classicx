@@ -1,0 +1,9 @@
+:80 {
+    root * /app
+    route {
+        axonasp {
+            site_name classicx
+        }
+        file_server
+    }
+}
