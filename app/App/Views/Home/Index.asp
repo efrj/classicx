@@ -39,7 +39,7 @@
     <%
         Else
             Do While feedIt.HasNext
-                Dim tweetItem : Set tweetItem = feedIt.GetNext
+                Set tweetItem = feedIt.GetNext
     %>
                 <!--#include file="../Shared/_TweetCard.asp"-->
     <%

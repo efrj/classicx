@@ -19,12 +19,21 @@ Class HomeController
         Set Model = New ExploreViewModel_Class
         
         Dim q : q = Trim(Request("q"))
+        Dim sType : sType = LCase(Trim(Request("type")))
+        If sType <> "latest" And sType <> "people" Then sType = "top"
+
         Model.Query = q
+        Model.SearchType = sType
 
         If q = "" Then
             Set Model.Tweets = TweetRepository.GetFeed(Auth.CurrentUserId, "for_you", 20)
+            Set Model.Users = New LinkedList_Class
+        ElseIf sType = "people" Then
+            Set Model.Tweets = New LinkedList_Class
+            Set Model.Users = UserRepository.SearchUsers(q, Auth.CurrentUserId)
         Else
-            Set Model.Tweets = TweetRepository.Search(q, Auth.CurrentUserId)
+            Set Model.Users = New LinkedList_Class
+            Set Model.Tweets = TweetRepository.SearchWithSort(q, Auth.CurrentUserId, sType)
         End If
     End Sub
 End Class
@@ -52,4 +61,3 @@ Dim Model : Set Model = Controller.Model
 <!--#include file="../../Views/Shared/layout.footer.asp"-->
 
 <% End If %>
-<% DAL.Close %>

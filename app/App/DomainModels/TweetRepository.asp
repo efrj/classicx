@@ -69,17 +69,29 @@ Class TweetRepository_Class
         If feed_type = "following" Then
             sql = "SELECT t.*, " &_
                   "  u.name AS user_name, u.handle AS user_handle, u.avatar_url AS user_avatar, u.is_verified AS user_verified, " &_
-                  "  (SELECT COUNT(*) FROM likes WHERE tweet_id = t.id AND user_id = " & uid & ") AS is_liked, " &_
-                  "  (SELECT COUNT(*) FROM retweets WHERE tweet_id = t.id AND user_id = " & uid & ") AS is_retweeted, " &_
-                  "  (SELECT COUNT(*) FROM bookmarks WHERE tweet_id = t.id AND user_id = " & uid & ") AS is_bookmarked, " &_
-                  "  NULL AS repost_name, NULL AS repost_handle " &_
-                  "FROM tweets t " &_
+                  "  (SELECT COUNT(*) FROM likes WHERE tweet_id = t.id AND user_id = ?) AS is_liked, " &_
+                  "  (SELECT COUNT(*) FROM retweets WHERE tweet_id = t.id AND user_id = ?) AS is_retweeted, " &_
+                  "  (SELECT COUNT(*) FROM bookmarks WHERE tweet_id = t.id AND user_id = ?) AS is_bookmarked, " &_
+                  "  reposter.name AS repost_name, reposter.handle AS repost_handle " &_
+                  "FROM ( " &_
+                  "  SELECT t_sub.id AS tweet_id, NULL AS reposter_id, t_sub.created_at AS event_time " &_
+                  "  FROM tweets t_sub " &_
+                  "  WHERE t_sub.parent_id IS NULL " &_
+                  "    AND (t_sub.user_id = ? OR t_sub.user_id IN (SELECT following_id FROM follows WHERE follower_id = ?)) " &_
+                  "  UNION ALL " &_
+                  "  SELECT r_sub.tweet_id, r_sub.user_id AS reposter_id, r_sub.created_at AS event_time " &_
+                  "  FROM retweets r_sub " &_
+                  "  JOIN tweets t2 ON r_sub.tweet_id = t2.id " &_
+                  "  WHERE t2.parent_id IS NULL " &_
+                  "    AND r_sub.user_id IN (SELECT following_id FROM follows WHERE follower_id = ?) " &_
+                  "    AND r_sub.user_id <> ? " &_
+                  ") feed " &_
+                  "JOIN tweets t ON feed.tweet_id = t.id " &_
                   "JOIN users u ON t.user_id = u.id " &_
-                  "WHERE t.parent_id IS NULL " &_
-                  "  AND (t.user_id = ? OR t.user_id IN (SELECT following_id FROM follows WHERE follower_id = ?)) " &_
-                  "ORDER BY t.created_at DESC LIMIT " & CLng(limit_num)
+                  "LEFT JOIN users reposter ON feed.reposter_id = reposter.id " &_
+                  "ORDER BY feed.event_time DESC LIMIT " & CLng(limit_num)
             
-            Dim rs : Set rs = DAL.Query(sql, Array(uid, uid))
+            Dim rs : Set rs = DAL.Query(sql, Array(uid, uid, uid, uid, uid, uid, uid))
             Dim list : Set list = New LinkedList_Class
             Do While Not rs.EOF
                 list.Append MapTweetRow(rs, current_user_id)
@@ -332,8 +344,18 @@ Class TweetRepository_Class
     End Function
 
     Public Function Search(query_text, current_user_id)
+        Set Search = SearchWithSort(query_text, current_user_id, "top")
+    End Function
+
+    Public Function SearchWithSort(query_text, current_user_id, sort_type)
         Dim uid : uid = CLng(current_user_id)
         Dim search_pattern : search_pattern = "%" & query_text & "%"
+        Dim order_clause
+        If sort_type = "latest" Then
+            order_clause = "ORDER BY t.created_at DESC LIMIT 50"
+        Else
+            order_clause = "ORDER BY (t.likes_count + t.retweets_count * 2) DESC, t.created_at DESC LIMIT 50"
+        End If
         Dim sql
         sql = "SELECT t.*, " &_
               "  u.name AS user_name, u.handle AS user_handle, u.avatar_url AS user_avatar, u.is_verified AS user_verified, " &_
@@ -344,7 +366,7 @@ Class TweetRepository_Class
               "FROM tweets t " &_
               "JOIN users u ON t.user_id = u.id " &_
               "WHERE t.content LIKE ? OR u.name LIKE ? OR u.handle LIKE ? " &_
-              "ORDER BY t.created_at DESC LIMIT 50"
+              order_clause
         
         Dim rs : Set rs = DAL.Query(sql, Array(search_pattern, search_pattern, search_pattern))
         Dim list : Set list = New LinkedList_Class
@@ -353,7 +375,7 @@ Class TweetRepository_Class
             rs.MoveNext
         Loop
         rs.Close
-        Set Search = list
+        Set SearchWithSort = list
     End Function
 
 End Class

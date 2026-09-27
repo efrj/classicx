@@ -63,7 +63,7 @@ Dim unreadNotifs : unreadNotifs = NotificationRepository.GetUnreadCount(currentU
             <i class="bi bi-three-dots ms-auto text-secondary d-none d-xl-inline"></i>
         </button>
 
-        <ul class="dropdown-menu dropdown-menu-dark shadow border-secondary py-2" style="background-color: #000; min-width: 250px; border-radius: 16px;">
+        <ul class="dropdown-menu dropdown-menu-dark shadow border-secondary py-2" style="background-color: #000; min-width: 260px; border-radius: 16px;">
             <li class="px-3 py-2 border-bottom border-secondary">
                 <div class="fw-bold text-white small">Switch Demo Account</div>
             </li>
@@ -75,36 +75,40 @@ Dim unreadNotifs : unreadNotifs = NotificationRepository.GetUnreadCount(currentU
             %>
                 <li>
                     <form method="POST" action="<%= Routes.UrlTo("Auth", "SwitchAccount", Empty) %>">
-<input type="hidden" name="csrf_token" value="<%= H(CsrfToken()) %>">
-<input type="hidden" name="user_id" value="<%= usr.Id %>">
-<button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 <%= Choice(usr.Id = currentUser.Id, "active bg-dark", "") %>" 
-                       >
-                        <img src="<%= H(usr.AvatarUrl) %>" width="32" height="32" class="rounded-circle" style="object-fit: cover;">
-                        <div class="flex-grow-1 text-truncate">
-                            <div class="small fw-bold"><%= H(usr.Name) %></div>
-                            <div class="text-muted smaller">@<%= H(usr.Handle) %></div>
-                        </div>
-                        <% If usr.Id = currentUser.Id Then %>
-                            <i class="bi bi-check-lg text-primary ms-auto"></i>
-                        <% End If %>
-                    </button></form>
+                        <input type="hidden" name="csrf_token" value="<%= H(CsrfToken()) %>">
+                        <input type="hidden" name="user_id" value="<%= usr.Id %>">
+                        <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 <%= Choice(usr.Id = currentUser.Id, "active bg-dark", "") %>">
+                            <img src="<%= H(usr.AvatarUrl) %>" width="32" height="32" class="rounded-circle" style="object-fit: cover;">
+                            <div class="flex-grow-1 text-truncate">
+                                <div class="small fw-bold"><%= H(usr.Name) %></div>
+                                <div class="text-muted smaller">@<%= H(usr.Handle) %></div>
+                            </div>
+                            <% If usr.Id = currentUser.Id Then %>
+                                <i class="bi bi-check-lg text-primary ms-auto"></i>
+                            <% End If %>
+                        </button>
+                    </form>
                 </li>
             <% Loop %>
             <li><hr class="dropdown-divider border-secondary"></li>
             <li>
-                <%
-                    Dim currentHandleDisplay : currentHandleDisplay = "user"
-                    If IsObject(currentUser) Then
-                        If Not currentUser Is Nothing Then
-                            currentHandleDisplay = currentUser.Handle
-                        End If
-                    End If
-                %>
+                <a class="dropdown-item py-2" href="<%= Routes.UrlTo("Auth", "Login", Empty) %>">
+                    <i class="bi bi-box-arrow-in-right me-2 text-primary"></i> Sign in with password
+                </a>
+            </li>
+            <li>
+                <a class="dropdown-item py-2" href="<%= Routes.UrlTo("Auth", "Register", Empty) %>">
+                    <i class="bi bi-person-plus me-2 text-info"></i> Create new account
+                </a>
+            </li>
+            <li><hr class="dropdown-divider border-secondary"></li>
+            <li>
                 <form method="POST" action="<%= Routes.UrlTo("Auth", "Logout", Empty) %>">
-<input type="hidden" name="csrf_token" value="<%= H(CsrfToken()) %>">
-<button type="submit" class="dropdown-item py-2 text-danger fw-bold">
-                    <i class="bi bi-box-arrow-right me-2"></i> Reset demo account
-                </button></form>
+                    <input type="hidden" name="csrf_token" value="<%= H(CsrfToken()) %>">
+                    <button type="submit" class="dropdown-item py-2 text-danger fw-bold">
+                        <i class="bi bi-box-arrow-right me-2"></i> Reset demo account
+                    </button>
+                </form>
             </li>
         </ul>
     </div>
