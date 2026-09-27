@@ -54,14 +54,14 @@ Dim unreadNotifs : unreadNotifs = NotificationRepository.GetUnreadCount(currentU
 
     <!-- User Profile Badge & Switcher Dropdown -->
     <div class="dropdown dropup w-100">
-        <div role="button" tabindex="0" aria-label="Switch demo account" class="x-user-badge" data-bs-toggle="dropdown" aria-expanded="false">
+        <button type="button" aria-label="Switch demo account" class="x-user-badge border-0 text-start" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="<%= H(currentUser.AvatarUrl) %>" alt="<%= H(currentUser.Name) %>" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
             <div class="d-none d-xl-flex flex-column text-truncate" style="line-height: 1.2; max-width: 140px;">
                 <span class="fw-bold text-truncate text-white"><%= H(currentUser.Name) %></span>
                 <span class="text-secondary small text-truncate">@<%= H(currentUser.Handle) %></span>
             </div>
             <i class="bi bi-three-dots ms-auto text-secondary d-none d-xl-inline"></i>
-        </div>
+        </button>
 
         <ul class="dropdown-menu dropdown-menu-dark shadow border-secondary py-2" style="background-color: #000; min-width: 250px; border-radius: 16px;">
             <li class="px-3 py-2 border-bottom border-secondary">

@@ -681,3 +681,11 @@ button:disabled { opacity: .55; cursor: wait; }
 
 /* Allow the feed to shrink alongside the navigation on narrow screens. */
 .x-center-col { min-width: 0; }
+.x-compose-content { min-width: 0; }
+.x-compose-actions { flex-wrap: wrap; gap: 8px; }
+.x-tweet-text { overflow-wrap: anywhere; }
+@media (max-width: 575px) {
+  .x-tweet-actions { flex-wrap: wrap; gap: 2px; }
+  .x-action-btn { min-height: 44px; padding: 6px 4px; gap: 4px; }
+  .x-compose-icons { gap: 2px; }
+}

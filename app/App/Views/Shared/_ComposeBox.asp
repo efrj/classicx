@@ -24,7 +24,7 @@ Dim composeUser : Set composeUser = Auth.CurrentUser
                 <template x-if="imageUrl">
                     <div class="mt-2 position-relative rounded-3 overflow-hidden border border-secondary" style="max-height: 200px;">
                         <img :src="imageUrl" class="w-100 object-fit-cover" style="max-height: 200px;" alt="Image preview">
-                        <button type="button" @click="imageUrl = ''" class="btn btn-sm btn-dark position-absolute top-0 end-0 m-2 rounded-circle" style="opacity: 0.8;">
+                        <button type="button" @click="imageUrl = ''" aria-label="Remove image" class="btn btn-sm btn-dark position-absolute top-0 end-0 m-2 rounded-circle" style="opacity: 0.8;">
                             <i class="bi bi-x"></i>
                         </button>
                     </div>

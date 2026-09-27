@@ -154,9 +154,9 @@ Class TweetRepository_Class
                   "  NULL AS repost_name, NULL AS repost_handle " &_
                   "FROM tweets t " &_
                   "JOIN users u ON t.user_id = u.id " &_
-                  "WHERE t.user_id = ? AND t.parent_id IS NULL " &_
+                  "WHERE (t.user_id = ? OR EXISTS (SELECT 1 FROM retweets r WHERE r.tweet_id = t.id AND r.user_id = ?)) AND t.parent_id IS NULL " &_
                   "ORDER BY t.created_at DESC LIMIT 50"
-            Set rs = DAL.Query(sql, Array(tid))
+            Set rs = DAL.Query(sql, Array(tid, tid))
         End If
 
         Do While Not rs.EOF

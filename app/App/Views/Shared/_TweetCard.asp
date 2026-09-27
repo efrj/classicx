@@ -33,7 +33,7 @@ If IsObject(tweetItem) Then
                     @<%= H(tweetItem.UserHandle) %>
                 </a>
                 <span class="x-tweet-dot">·</span>
-                <span class="x-tweet-time"><%= H(tweetItem.TimeAgoFormatted) %></span>
+                <a class="x-tweet-time" href="<%= H(Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id))) %>"><%= H(tweetItem.TimeAgoFormatted) %></a>
             </div>
 
             <!-- Tweet Options Dropdown -->
@@ -90,7 +90,7 @@ If IsObject(tweetItem) Then
                     class="x-action-btn repost" 
                     :class="{ 'reposted': isRetweeted }" 
                     @click="toggleRetweet('<%= Routes.UrlTo("Tweets", "RetweetPost", Empty) %>')"
-                    :disabled="isLoading" :aria-pressed="isRetweeted" title="Repost">
+                    :disabled="isLoading" :aria-pressed="isRetweeted" aria-label="Repost" title="Repost">
                 <i class="bi bi-repeat"></i>
                 <span class="smaller" x-text="retweetsCount > 0 ? retweetsCount : ''"></span>
             </button>
@@ -100,7 +100,7 @@ If IsObject(tweetItem) Then
                     class="x-action-btn like" 
                     :class="{ 'liked': isLiked }" 
                     @click="toggleLike('<%= Routes.UrlTo("Tweets", "LikePost", Empty) %>')"
-                    :disabled="isLoading" :aria-pressed="isLiked" title="Like">
+                    :disabled="isLoading" :aria-pressed="isLiked" aria-label="Like" title="Like">
                 <i class="bi" :class="isLiked ? 'bi-heart-fill' : 'bi-heart'"></i>
                 <span class="smaller" x-text="likesCount > 0 ? likesCount : ''"></span>
             </button>
@@ -116,7 +116,7 @@ If IsObject(tweetItem) Then
                     class="x-action-btn bookmark" 
                     :class="{ 'bookmarked': isBookmarked }" 
                     @click="toggleBookmark('<%= Routes.UrlTo("Tweets", "BookmarkPost", Empty) %>')"
-                    :disabled="isLoading" :aria-pressed="isBookmarked" title="Bookmark">
+                    :disabled="isLoading" :aria-pressed="isBookmarked" aria-label="Bookmark" title="Bookmark">
                 <i class="bi" :class="isBookmarked ? 'bi-bookmark-fill' : 'bi-bookmark'"></i>
             </button>
         </div>
