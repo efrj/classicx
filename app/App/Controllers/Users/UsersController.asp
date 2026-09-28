@@ -3,18 +3,25 @@
 Class UsersController
     Public Model
 
+    Private Function GetHandle()
+        Dim h : h = CStr(Request.QueryString("handle"))
+        If InStr(h, ",") > 0 Then h = Trim(Split(h, ",")(0))
+        GetHandle = h
+    End Function
+
     Public Sub Profile
         Set Model = New ProfileViewModel_Class
-        Set Model.ProfileUser = UserRepository.FindByHandle(CStr(Request.QueryString("handle")))
+        Set Model.ProfileUser = UserRepository.FindByHandle(GetHandle())
         If Model.ProfileUser Is Nothing Then Call HttpError("404 Not Found", "User not found.")
         Model.ActiveTab = LCase(Request.QueryString("tab"))
+        If InStr(Model.ActiveTab, ",") > 0 Then Model.ActiveTab = Trim(Split(Model.ActiveTab, ",")(0))
         If Model.ActiveTab <> "replies" And Model.ActiveTab <> "likes" Then Model.ActiveTab = "posts"
         Set Model.Tweets = TweetRepository.GetUserTweets(Model.ProfileUser.Id, Auth.CurrentUserId, Model.ActiveTab)
     End Sub
 
     Public Sub Followers
         Set Model = New UserListViewModel_Class
-        Set Model.ProfileUser = UserRepository.FindByHandle(CStr(Request.QueryString("handle")))
+        Set Model.ProfileUser = UserRepository.FindByHandle(GetHandle())
         If Model.ProfileUser Is Nothing Then Call HttpError("404 Not Found", "User not found.")
         Model.ListType = "followers"
         Set Model.Users = UserRepository.GetFollowers(Model.ProfileUser.Id, Auth.CurrentUserId)
@@ -22,7 +29,7 @@ Class UsersController
 
     Public Sub Following
         Set Model = New UserListViewModel_Class
-        Set Model.ProfileUser = UserRepository.FindByHandle(CStr(Request.QueryString("handle")))
+        Set Model.ProfileUser = UserRepository.FindByHandle(GetHandle())
         If Model.ProfileUser Is Nothing Then Call HttpError("404 Not Found", "User not found.")
         Model.ListType = "following"
         Set Model.Users = UserRepository.GetFollowing(Model.ProfileUser.Id, Auth.CurrentUserId)

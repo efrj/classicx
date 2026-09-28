@@ -24,7 +24,10 @@ Class UserRepository_Class
             Exit Function
         End If
         Dim rs : Set rs = DAL.Query(sql, Array(id))
-        If rs Is Nothing Then
+        If Not IsObject(rs) Then
+            Set FindById = Nothing
+            Exit Function
+        ElseIf rs Is Nothing Then
             Set FindById = Nothing
             Exit Function
         End If

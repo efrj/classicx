@@ -8,7 +8,9 @@ Class TweetsController
     End Sub
     Public Sub Show
         Set Model = New TweetDetailViewModel_Class
-        Dim id : id = PositiveId(Request.QueryString("id"))
+        Dim idRaw : idRaw = Request.QueryString("id")
+        If InStr(idRaw, ",") > 0 Then idRaw = Trim(Split(idRaw, ",")(0))
+        Dim id : id = PositiveId(idRaw)
         Set Model.Tweet = TweetRepository.FindById(id, Auth.CurrentUserId)
         If Model.Tweet Is Nothing Then Call HttpError("404 Not Found", "Post not found.")
         Set Model.Replies = TweetRepository.GetReplies(id, Auth.CurrentUserId)
