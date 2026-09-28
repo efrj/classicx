@@ -75,7 +75,7 @@ Class Route_Helper_Class
                 If Not exclude Then
                     v = ""
                     If i + 1 <= UBound(params_array) Then
-                        v = Server.URLEncode(CStr(params_array(i + 1)))
+                        v = Server.URLEncode("" & params_array(i + 1))
                     End If
                     If qs <> "" Then qs = qs & "&"
                     qs = qs & k & "=" & v
@@ -133,9 +133,14 @@ Class Route_Helper_Class
                     Case "show"
                         idVal = GetParam(params_array, "id")
                         If idVal <> "" Then
-                            qs = BuildQueryString(params_array, Empty)
-                            If qs = "" Then qs = "?id=" & Server.URLEncode(idVal)
-                            UrlTo = "/tweet/" & Server.URLEncode(idVal) & qs
+                            handleVal = GetParam(params_array, "handle")
+                            If Left(handleVal, 1) = "@" Then handleVal = Mid(handleVal, 2)
+                            qs = BuildQueryString(params_array, Array("id", "handle"))
+                            If handleVal <> "" Then
+                                UrlTo = "/" & handleVal & "/status/" & Server.URLEncode(idVal) & qs
+                            Else
+                                UrlTo = "/status/" & Server.URLEncode(idVal) & qs
+                            End If
                             Exit Function
                         End If
                 End Select

@@ -40,7 +40,10 @@ def run():
         ('/user/classicx', 'ClassicX Official'),
         ('/tweet/1', 'ClassicX'),
         ('/status/1', 'ClassicX'),
+        ('/classicx/status/1', 'ClassicX'),
         ('/elonmusk/status/1', 'ClassicX'),
+        ('/VandreRosul/status/1', 'ClassicX'),
+        ('/esmeraldo1773/status/1', 'ClassicX'),
     ]
 
     for path, expected_text in urls_to_test:
@@ -61,10 +64,19 @@ def run():
         assert not link.startswith('/App/Controllers/'), f"Navigation link should be friendly, got: {link}"
         assert link in ['/home', '/explore', '/notifications', '/bookmarks', '/@classicx'], f"Unexpected nav link: {link}"
 
+    # Verify tweet permalinks strictly follow the X pattern: /{handle}/status/{id}
+    tweet_links = re.findall(r'class="x-tweet-time"\s+href="([^"]+)"', home_body)
+    assert len(tweet_links) > 0, "Tweet permalinks not found on home page"
+    for link in tweet_links:
+        assert re.match(r'^/[a-zA-Z0-9_]+/status/[0-9]+$', link), f"Tweet link should match X format /{handle}/status/{id} without query string, got: {link}"
+        assert '?id=' not in link, f"Tweet link must not contain ?id=: {link}"
+
     # 5. POST actions via friendly URLs
     marker = 'friendly-' + uuid.uuid4().hex[:8]
     create_body, create_url = c.request('/tweets/create', {'csrf_token': c.token, 'content': f'Testing friendly URL posts {marker}'})
     assert marker in create_body, f"Created tweet not found in timeline: {marker}"
+    assert re.search(r'/[a-zA-Z0-9_]+/status/[0-9]+', create_url), f"Redirect URL must match X status pattern, got {create_url}"
+    assert '?id=' not in create_url, f"Redirect URL must not contain query string ?id=, got {create_url}"
 
     print("PASS: friendly URLs, root redirect, static assets, friendly UI links, and friendly POST actions")
 

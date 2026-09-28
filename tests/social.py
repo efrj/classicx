@@ -24,8 +24,8 @@ def run():
         notices,_=b.request('/App/Controllers/Notifications/NotificationsController.asp');assert prefix+'_1' in notices
         b.post('Notifications','ReadPost');assert sql(f'SELECT COUNT(*) FROM notifications WHERE user_id={ids[1]} AND is_read=0')=='0'
         _,url=b.post('Tweets','CreatePost',{'content':prefix+' followed post'})
-        from urllib.parse import parse_qs,urlsplit
-        postid=parse_qs(urlsplit(url).query)['id'][0]
+        from smoke import extract_tweet_id
+        postid=extract_tweet_id(url)
         body,_=a.request(HOME+'?tab=following');assert prefix+' followed post' in body
         a.post('Tweets','RetweetPost',{'tweet_id':postid})
         body,_=a.request('/App/Controllers/Users/UsersController.asp?_A=Profile&handle='+prefix+'_1');assert prefix+' followed post' in body

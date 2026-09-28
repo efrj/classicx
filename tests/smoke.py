@@ -24,6 +24,12 @@ class Client:
         return body, res.url
     def post(self, controller, action, data=None, expected=200):
         return self.request(f'/App/Controllers/{controller}/{controller}Controller.asp?_A={action}', dict(csrf_token=self.token, **(data or {})), expected)
+def extract_tweet_id(url):
+    m = re.search(r'/status/(\d+)', url)
+    if m: return m.group(1)
+    qs = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+    return qs['id'][0]
+
 HOME = '/App/Controllers/Home/HomeController.asp'
 TWEETS = '/App/Controllers/Tweets/TweetsController.asp'
 def run():
@@ -52,7 +58,7 @@ def run():
     try:
         marker='smoke-'+uuid.uuid4().hex[:12]
         body,url=c.post('Tweets','CreatePost',{'content':marker+" ação \\' ? <script>alert(1)</script> #ASP @classicx"})
-        id=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)['id'][0];ids.append(id)
+        id=extract_tweet_id(url);ids.append(id)
         assert marker in body and '<script>alert(1)</script>' not in body
         assert '%241' not in body
         for action in ['LikePost','RetweetPost','BookmarkPost']:
@@ -63,7 +69,7 @@ def run():
         body,_=c.request(TWEETS+'?_A=Bookmarks');assert marker in body
         c.post('Tweets','BookmarkPost',{'tweet_id':id})
         body,url=c.post('Tweets','CreatePost',{'content':marker+' reply','parent_id':id})
-        reply=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)['id'][0];ids.append(reply)
+        reply=extract_tweet_id(url);ids.append(reply)
         body,_=c.request(TWEETS+'?_A=Show&id='+id);assert marker+' reply' in body
         other=Client();other.request(HOME);other.post('Auth','SwitchAccount',{'user_id':'2'})
         other.post('Tweets','DeletePost',{'id':id},expected=403)

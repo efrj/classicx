@@ -7,11 +7,14 @@ Class AuthHelper_Class
     Private m_current_user
 
     Public Property Get CurrentUserId
-        If IsEmpty(Session("ClassicX_UserId")) Or Session("ClassicX_UserId") = "" Then
-            ' Default to user 1 (classicx) for seamless exploring/demo experience
+        Dim sUid
+        sUid = Session("ClassicX_UserId")
+        If IsEmpty(sUid) Or sUid = "" Then
             Session("ClassicX_UserId") = 1
+            CurrentUserId = 1
+        Else
+            CurrentUserId = CLng(sUid)
         End If
-        CurrentUserId = CLng(Session("ClassicX_UserId"))
     End Property
 
     Public Property Let CurrentUserId(val)
@@ -83,25 +86,25 @@ Class AuthHelper_Class
 
     ' Transform plain text into Twitter-like links for @mentions and #hashtags
     Public Function FormatTweetText(raw_text)
-        Dim raw, rx, matches, hit, offset, out, token, url, position
+        Dim raw, rx, matches, hit, offset, out, token, url, position, hitVal
         raw = SafeStr(raw_text)
         Set rx = New RegExp
         rx.Global = True
         rx.Pattern = "[@#][a-zA-Z0-9_]+"
         Set matches = rx.Execute(raw)
         offset = 1
-        out = ""
         For Each hit In matches
-            position = InStr(offset, raw, hit.Value, 0)
+            hitVal = "" & hit.Value
+            position = InStr(offset, raw, hitVal, 0)
             out = out & H(Mid(raw, offset, position - offset))
-            token = Mid(hit.Value, 2)
-            If Left(hit.Value, 1) = "@" Then
+            token = Mid(hitVal, 2)
+            If Left(hitVal, 1) = "@" Then
                 url = Routes.UrlTo("Users", "Profile", Array("handle", token))
             Else
-                url = Routes.UrlTo("Home", "Explore", Array("q", hit.Value))
+                url = Routes.UrlTo("Home", "Explore", Array("q", hitVal))
             End If
-            out = out & "<a href=""" & H(url) & """>" & H(hit.Value) & "</a>"
-            offset = position + Len(hit.Value)
+            out = out & "<a href=""" & H(url) & """>" & H(hitVal) & "</a>"
+            offset = position + Len(hitVal)
         Next
         out = out & H(Mid(raw, offset))
         out = Replace(out, vbCrLf, vbLf)

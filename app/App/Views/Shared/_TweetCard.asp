@@ -33,7 +33,7 @@ If IsObject(tweetItem) Then
                     @<%= H(tweetItem.UserHandle) %>
                 </a>
                 <span class="x-tweet-dot">·</span>
-                <a class="x-tweet-time" href="<%= H(Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id))) %>"><%= H(tweetItem.TimeAgoFormatted) %></a>
+                <a class="x-tweet-time" href="<%= H(Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id, "handle", tweetItem.UserHandle))) %>"><%= H(tweetItem.TimeAgoFormatted) %></a>
             </div>
 
             <!-- Tweet Options Dropdown -->
@@ -54,7 +54,7 @@ If IsObject(tweetItem) Then
                         </li>
                     <% End If %>
                     <li>
-                        <button type="button" class="dropdown-item py-2" onclick="navigator.clipboard.writeText(location.origin + '<%= Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id)) %>').then(() => alert('Link copied to clipboard!')).catch(() => alert('Could not copy the link.'));">
+                        <button type="button" class="dropdown-item py-2" onclick="navigator.clipboard.writeText(location.origin + '<%= Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id, "handle", tweetItem.UserHandle)) %>').then(() => alert('Link copied to clipboard!')).catch(() => alert('Could not copy the link.'));">
                             <i class="bi bi-link-45deg me-2"></i> Copy link to post
                         </button>
                     </li>
@@ -80,7 +80,7 @@ If IsObject(tweetItem) Then
         <!-- Tweet Action Buttons Row -->
         <div class="x-tweet-actions">
             <!-- Reply Button -->
-            <a href="<%= Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id)) %>" class="x-action-btn reply" title="Reply">
+            <a href="<%= Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id, "handle", tweetItem.UserHandle)) %>" class="x-action-btn reply" title="Reply">
                 <i class="bi bi-chat"></i>
                 <span class="smaller"><%= Choice(tweetItem.RepliesCount > 0, tweetItem.RepliesCount, "") %></span>
             </a>

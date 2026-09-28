@@ -39,7 +39,7 @@ Class TweetsController
         End If
         Set created = TweetRepository.CreateTweet(Auth.CurrentUserId, body, media, parent, 0)
         DAL.CommitTransaction
-        Dim url : url = Routes.UrlTo("Tweets", "Show", Array("id", created.Id))
+        Dim url : url = Routes.UrlTo("Tweets", "Show", Array("id", created.Id, "handle", created.UserHandle))
         DAL.Close
         Response.Redirect url
         Response.End

@@ -14,6 +14,7 @@ Class NotificationModel_Class
     Public NotifType
     Public TweetId
     Public TweetContent
+    Public TweetAuthorHandle
     Public IsRead
     Public CreatedAt
     Public TimeAgoFormatted
@@ -24,34 +25,42 @@ Class NotificationRepository_Class
         Dim sql
         sql = "SELECT n.*, " &_
               "  u.name AS actor_name, u.handle AS actor_handle, u.avatar_url AS actor_avatar, u.is_verified AS actor_verified, " &_
-              "  t.content AS tweet_content " &_
+              "  t.content AS tweet_content, author.handle AS tweet_author_handle " &_
               "FROM notifications n " &_
               "JOIN users u ON n.actor_id = u.id " &_
               "LEFT JOIN tweets t ON n.tweet_id = t.id " &_
+              "LEFT JOIN users author ON t.user_id = author.id " &_
               "WHERE n.user_id = ? " &_
               "ORDER BY n.created_at DESC LIMIT 50"
         
-        Dim rs : Set rs = DAL.Query(sql, Array(user_id))
+        Dim uid : uid = CLng(user_id)
+        Dim rs
+        Set rs = DAL.Query(sql, Array(uid))
         Dim list : Set list = New LinkedList_Class
-        Do While Not rs.EOF
-            Dim n : Set n = New NotificationModel_Class
-            n.Id = SafeLng(rs("id"))
-            n.UserId = SafeLng(rs("user_id"))
-            n.ActorId = SafeLng(rs("actor_id"))
-            n.ActorName = SafeStr(rs("actor_name"))
-            n.ActorHandle = SafeStr(rs("actor_handle"))
-            n.ActorAvatar = SafeStr(rs("actor_avatar"))
-            n.ActorIsVerified = SafeBool(rs("actor_verified"))
-            n.NotifType = SafeStr(rs("type"))
-            n.TweetId = SafeLng(rs("tweet_id"))
-            n.TweetContent = SafeStr(rs("tweet_content"))
-            n.IsRead = SafeBool(rs("is_read"))
-            n.CreatedAt = SafeStr(rs("created_at"))
-            n.TimeAgoFormatted = Auth.FormatTimeAgo(SafeStr(rs("created_at")))
-            list.Append n
-            rs.MoveNext
-        Loop
-        rs.Close
+        If IsObject(rs) Then
+            If Not rs Is Nothing Then
+                Do While Not rs.EOF
+                    Dim n : Set n = New NotificationModel_Class
+                    n.Id = SafeLng(rs("id"))
+                    n.UserId = SafeLng(rs("user_id"))
+                    n.ActorId = SafeLng(rs("actor_id"))
+                    n.ActorName = SafeStr(rs("actor_name"))
+                    n.ActorHandle = SafeStr(rs("actor_handle"))
+                    n.ActorAvatar = SafeStr(rs("actor_avatar"))
+                    n.ActorIsVerified = SafeBool(rs("actor_verified"))
+                    n.NotifType = SafeStr(rs("type"))
+                    n.TweetId = SafeLng(rs("tweet_id"))
+                    n.TweetContent = SafeStr(rs("tweet_content"))
+                    n.TweetAuthorHandle = SafeStr(rs("tweet_author_handle"))
+                    n.IsRead = SafeBool(rs("is_read"))
+                    n.CreatedAt = SafeStr(rs("created_at"))
+                    n.TimeAgoFormatted = Auth.FormatTimeAgo(SafeStr(rs("created_at")))
+                    list.Append n
+                    rs.MoveNext
+                Loop
+                rs.Close
+            End If
+        End If
         Set GetNotifications = list
     End Function
 

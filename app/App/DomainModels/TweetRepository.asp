@@ -335,11 +335,15 @@ Class TweetRepository_Class
         
         Dim rs : Set rs = DAL.Query(sql, Array(uid))
         Dim list : Set list = New LinkedList_Class
-        Do While Not rs.EOF
-            list.Append MapTweetRow(rs, current_user_id)
-            rs.MoveNext
-        Loop
-        rs.Close
+        If IsObject(rs) Then
+            If Not rs Is Nothing Then
+                Do While Not rs.EOF
+                    list.Append MapTweetRow(rs, current_user_id)
+                    rs.MoveNext
+                Loop
+                rs.Close
+            End If
+        End If
         Set GetBookmarks = list
     End Function
 

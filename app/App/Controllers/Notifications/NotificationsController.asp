@@ -40,7 +40,7 @@ Do While notices.HasNext
     <% If Not notice.IsRead Then %><span class="badge bg-primary">New</span><% End If %>
     <span class="text-secondary small"><%= H(notice.TimeAgoFormatted) %></span>
     <% If notice.TweetId > 0 Then %>
-    <p class="mb-0"><a href="<%= H(Routes.UrlTo("Tweets", "Show", Array("id", notice.TweetId))) %>"><%= H(notice.TweetContent) %></a></p>
+    <p class="mb-0"><a href="<%= H(Routes.UrlTo("Tweets", "Show", Array("id", notice.TweetId, "handle", notice.TweetAuthorHandle))) %>"><%= H(notice.TweetContent) %></a></p>
     <% End If %>
 </article>
 <% Loop %>

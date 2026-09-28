@@ -20,14 +20,14 @@ Class MVC_Dispatcher_Class
     End Sub
     
     Public Property Get ControllerName
-        If m_controller_name = "" Then SetControllerActionNames
+        SetControllerActionNames
         ControllerName = m_controller_name
-    end Property
+    End Property
     
     Public Property Get ActionName
-        If m_action_name = "" Then SetControllerActionNames
+        SetControllerActionNames
         ActionName = m_action_name
-    end Property
+    End Property
     
     Public Property Get IsPartial
         IsPartial = m_is_partial

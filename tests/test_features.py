@@ -196,7 +196,8 @@ def run():
         
         # User 1 creates post P1
         _, p1_url = c_relogin.post('Tweets', 'CreatePost', {'content': f'P1 by user 1 {prefix}'})
-        p1_id = parse_qs(urlsplit(p1_url).query)['id'][0]
+        from smoke import extract_tweet_id
+        p1_id = extract_tweet_id(p1_url)
         
         # User 2 retweets P1
         c2.post('Tweets', 'RetweetPost', {'tweet_id': p1_id})

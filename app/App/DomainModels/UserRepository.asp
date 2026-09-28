@@ -208,10 +208,10 @@ Class UserRepository_Class
         DAL.Exec sql, Array(user_model.Name, user_model.Bio, user_model.Location, user_model.Website, user_model.AvatarUrl, user_model.BannerUrl, user_model.Id)
     End Sub
 
-    Public Sub UpdateProfile(id, name, bio, location, website, avatar_url, banner_url)
+    Public Sub UpdateProfile(id, name, bio, user_loc, website, avatar_url, banner_url)
         Dim sql
         sql = "UPDATE users SET name = ?, bio = ?, location = ?, website = ?, avatar_url = ?, banner_url = ? WHERE id = ?"
-        DAL.Exec sql, Array(name, bio, location, website, avatar_url, banner_url, id)
+        DAL.Exec sql, Array(name, bio, user_loc, website, avatar_url, banner_url, id)
     End Sub
 
     Public Function GetWhoToFollow(current_user_id, limit_num)
