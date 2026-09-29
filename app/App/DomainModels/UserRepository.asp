@@ -5,7 +5,7 @@
 
 Class UserRepository_Class
 
-    Public Function FindById(id)
+    Public Function FindById(ByVal id)
         Dim current_id : current_id = CLng(Auth.CurrentUserId)
         Dim sql
         sql = "SELECT u.*, " &_
@@ -57,10 +57,11 @@ Class UserRepository_Class
         rs.Close
     End Function
 
-    Public Function FindByHandle(handle)
+    Public Function FindByHandle(ByVal handle_input)
         Dim current_id : current_id = CLng(Auth.CurrentUserId)
+        Dim h : h = CStr(handle_input)
         ' Strip leading @ if present
-        If Left(handle, 1) = "@" Then handle = Mid(handle, 2)
+        If Left(h, 1) = "@" Then h = Mid(h, 2)
         
         Dim sql
         sql = "SELECT u.*, " &_
@@ -70,7 +71,7 @@ Class UserRepository_Class
               "  (SELECT COUNT(*) FROM follows WHERE follower_id = " & current_id & " AND following_id = u.id) AS is_followed " &_
               "FROM users u WHERE LOWER(u.handle) = LOWER(?)"
         
-        Dim rs : Set rs = DAL.Query(sql, Array(handle))
+        Dim rs : Set rs = DAL.Query(sql, Array(h))
         If rs.EOF Then
             Set FindByHandle = Nothing
         Else

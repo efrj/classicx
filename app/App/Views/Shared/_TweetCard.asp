@@ -44,17 +44,13 @@ If IsObject(tweetItem) Then
                 <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end border-secondary shadow" style="background-color: #000; border-radius: 12px;">
                     <% If tweetItem.UserId = Auth.CurrentUserId Then %>
                         <li>
-                            <form action="<%= Routes.UrlTo("Tweets", "DeletePost", Empty) %>" method="POST" onsubmit="return confirm('Delete this post?');">
-                                <input type="hidden" name="csrf_token" value="<%= H(CsrfToken()) %>">
-<input type="hidden" name="id" value="<%= tweetItem.Id %>">
-                                <button type="submit" class="dropdown-item text-danger py-2">
-                                    <i class="bi bi-trash3 me-2"></i> Delete post
-                                </button>
-                            </form>
+                            <button type="button" class="dropdown-item text-danger py-2" data-bs-toggle="modal" data-bs-target="#deletePostModal" data-tweet-id="<%= tweetItem.Id %>">
+                                <i class="bi bi-trash3 me-2"></i> Delete post
+                            </button>
                         </li>
                     <% End If %>
                     <li>
-                        <button type="button" class="dropdown-item py-2" onclick="navigator.clipboard.writeText(location.origin + '<%= Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id, "handle", tweetItem.UserHandle)) %>').then(() => alert('Link copied to clipboard!')).catch(() => alert('Could not copy the link.'));">
+                        <button type="button" class="dropdown-item py-2" onclick="copyPostLink('<%= Routes.UrlTo("Tweets", "Show", Array("id", tweetItem.Id, "handle", tweetItem.UserHandle)) %>')">
                             <i class="bi bi-link-45deg me-2"></i> Copy link to post
                         </button>
                     </li>

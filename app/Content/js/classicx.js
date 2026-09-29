@@ -107,3 +107,68 @@ document.addEventListener('alpine:init', () => {
 
     }));
 });
+
+/**
+ * Global X Toast Notification helper
+ */
+let xToastTimeout = null;
+function showXToast(message) {
+    const toast = document.getElementById('xToast');
+    const msgEl = document.getElementById('xToastMessage');
+    if (!toast) return;
+    if (msgEl && message) {
+        msgEl.textContent = message;
+    }
+    toast.classList.add('show');
+    if (xToastTimeout) clearTimeout(xToastTimeout);
+    xToastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+/**
+ * Copy tweet permalink to clipboard with fallback and X Toast feedback
+ */
+async function copyPostLink(url) {
+    const fullUrl = url.startsWith('http') ? url : window.location.origin + url;
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(fullUrl);
+        } else {
+            const textArea = document.createElement('textarea');
+            textArea.value = fullUrl;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+        showXToast('Copied to clipboard');
+    } catch (err) {
+        console.error('Failed to copy link: ', err);
+        showXToast('Could not copy the link');
+    }
+}
+
+/**
+ * Setup X-style Delete Post Modal trigger
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    const deleteModalEl = document.getElementById('deletePostModal');
+    if (deleteModalEl) {
+        deleteModalEl.addEventListener('show.bs.modal', (event) => {
+            const button = event.relatedTarget;
+            if (button) {
+                const tweetId = button.getAttribute('data-tweet-id');
+                const idInput = deleteModalEl.querySelector('#deletePostModalId');
+                if (idInput && tweetId) {
+                    idInput.value = tweetId;
+                }
+            }
+        });
+    }
+});
+

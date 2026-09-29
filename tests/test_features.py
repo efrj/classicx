@@ -207,7 +207,17 @@ def run():
         assert f'P1 by user 1 {prefix}' in feed_page, "Following feed should include reposted post from followed user"
         assert name2 in feed_page or handle2 in feed_page, "Following feed should indicate reposting user"
 
-        print("PASS: registration, salted password hashing, login, password recovery, profile edit, user lists, explore tabs, following feed reposts")
+        # 9. Verify X-style Delete Modal and Copy Toast UI
+        home_html, _ = c_relogin.request(HOME)
+        assert 'id="deletePostModal"' in home_html, "Expected deletePostModal in DOM"
+        assert 'Delete post?' in home_html, "Expected X-style 'Delete post?' in modal"
+        assert 'id="xToast"' in home_html, "Expected X toast notification pill in DOM"
+        assert 'copyPostLink(' in home_html, "Expected copyPostLink helper call on tweet cards"
+        assert "alert('Link copied" not in home_html, "No native alert() calls should remain in tweet cards"
+        assert 'onclick="alert(' not in home_html, "No native alert() in onclick attributes"
+        assert "confirm('Delete this post?')" not in home_html, "No native confirm() should remain for delete"
+
+        print("PASS: registration, salted password hashing, login, password recovery, profile edit, user lists, explore tabs, following feed reposts, X-style modal and toast")
     finally:
         if created_handles:
             handles_in = "'" + "','".join(created_handles) + "'"

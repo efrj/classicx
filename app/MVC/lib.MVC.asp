@@ -20,12 +20,12 @@ Class MVC_Dispatcher_Class
     End Sub
     
     Public Property Get ControllerName
-        SetControllerActionNames
+        If m_controller_name = "" Then SetControllerActionNames
         ControllerName = m_controller_name
     End Property
     
     Public Property Get ActionName
-        SetControllerActionNames
+        If m_action_name = "" Then SetControllerActionNames
         ActionName = m_action_name
     End Property
     
@@ -103,7 +103,27 @@ Class MVC_Dispatcher_Class
         else
             m_controller_name = "Home"
         end if
-        m_action_name = Choice(request.QueryString("_A") <> "", request.QueryString("_A"), m_default_action_name)
+        Dim reqAction : reqAction = CStr(request.QueryString("_A"))
+        If InStr(reqAction, ",") > 0 Then reqAction = Trim(Split(reqAction, ",")(0))
+        If reqAction <> "" Then
+            m_action_name = reqAction
+        Else
+            Dim rawQs : rawQs = CStr(Request.ServerVariables("QUERY_STRING"))
+            If InStr(rawQs, "_A=") > 0 Then
+                Dim qsParts, qp, kv
+                qsParts = Split(rawQs, "&")
+                For Each qp In qsParts
+                    kv = Split(qp, "=")
+                    If UBound(kv) >= 1 Then
+                        If LCase(kv(0)) = "_a" Then
+                            m_action_name = kv(1)
+                            Exit Sub
+                        End If
+                    End If
+                Next
+            End If
+            m_action_name = m_default_action_name
+        End If
     End Sub
     
     ' This is deprecated to avoid creating a Dictionary object with every request.

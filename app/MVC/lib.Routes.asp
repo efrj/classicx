@@ -42,7 +42,7 @@ Class Route_Helper_Class
         StylesheetsUrl = m_stylesheets_url
     End Property
 
-    Private Function GetParam(ByVal params_array, ByVal key_name)
+    Private Function GetParam(params_array, ByVal key_name)
         GetParam = ""
         If IsArray(params_array) Then
             Dim i
@@ -57,7 +57,7 @@ Class Route_Helper_Class
         End If
     End Function
 
-    Private Function BuildQueryString(ByVal params_array, ByVal exclude_keys_array)
+    Private Function BuildQueryString(params_array, exclude_keys_array)
         Dim qs : qs = ""
         If IsArray(params_array) Then
             Dim i, k, v, exclude, ex
@@ -86,7 +86,7 @@ Class Route_Helper_Class
         BuildQueryString = qs
     End Function
     
-    Public Function UrlTo(ByVal controller_name, ByVal action_name, ByVal params_array)
+    Public Function UrlTo(ByVal controller_name, ByVal action_name, params_array)
         Dim c : c = LCase(controller_name)
         Dim a : a = LCase(action_name)
         Dim handleVal, idVal, tabVal, qs

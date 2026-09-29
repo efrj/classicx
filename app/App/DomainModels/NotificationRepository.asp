@@ -23,7 +23,7 @@ End Class
 Class NotificationRepository_Class
     Public Function GetNotifications(user_id)
         Dim sql
-        sql = "SELECT n.*, " &_
+        sql = "SELECT n.*, n.type AS notif_type, " &_
               "  u.name AS actor_name, u.handle AS actor_handle, u.avatar_url AS actor_avatar, u.is_verified AS actor_verified, " &_
               "  t.content AS tweet_content, author.handle AS tweet_author_handle " &_
               "FROM notifications n " &_
@@ -33,9 +33,7 @@ Class NotificationRepository_Class
               "WHERE n.user_id = ? " &_
               "ORDER BY n.created_at DESC LIMIT 50"
         
-        Dim uid : uid = CLng(user_id)
-        Dim rs
-        Set rs = DAL.Query(sql, Array(uid))
+        Dim rs : Set rs = DAL.Query(sql, Array(user_id))
         Dim list : Set list = New LinkedList_Class
         If IsObject(rs) Then
             If Not rs Is Nothing Then
@@ -48,7 +46,7 @@ Class NotificationRepository_Class
                     n.ActorHandle = SafeStr(rs("actor_handle"))
                     n.ActorAvatar = SafeStr(rs("actor_avatar"))
                     n.ActorIsVerified = SafeBool(rs("actor_verified"))
-                    n.NotifType = SafeStr(rs("type"))
+                    n.NotifType = SafeStr(rs("notif_type"))
                     n.TweetId = SafeLng(rs("tweet_id"))
                     n.TweetContent = SafeStr(rs("tweet_content"))
                     n.TweetAuthorHandle = SafeStr(rs("tweet_author_handle"))
