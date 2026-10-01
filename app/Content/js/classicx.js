@@ -13,11 +13,13 @@ async function writeAction(url, values) {
  */
 
 document.addEventListener('alpine:init', () => {
-    // Tweet composer component
+    // Tweet composer component with RustFS uploads
     Alpine.data('composeBox', () => ({
         content: '',
         imageUrl: '',
         showMediaInput: false,
+        isUploading: false,
+        uploadError: '',
         maxChars: 280,
 
         get charCount() {
@@ -27,7 +29,7 @@ document.addEventListener('alpine:init', () => {
             return this.maxChars - this.content.length;
         },
         get isValid() {
-            return this.content.trim().length > 0 && this.content.length <= this.maxChars;
+            return this.content.trim().length > 0 && this.content.length <= this.maxChars && !this.isUploading;
         },
         get progressPercent() {
             return Math.min(100, (this.content.length / this.maxChars) * 100);
@@ -43,6 +45,63 @@ document.addEventListener('alpine:init', () => {
         },
         toggleMedia() {
             this.showMediaInput = !this.showMediaInput;
+        },
+        triggerFileInput() {
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.click();
+            }
+        },
+        async handleFileUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                this.uploadError = 'Please select a valid image (PNG, JPG, GIF, WEBP).';
+                showXToast(this.uploadError);
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                this.uploadError = 'Image must be smaller than 10MB.';
+                showXToast(this.uploadError);
+                return;
+            }
+
+            this.isUploading = true;
+            this.uploadError = '';
+
+            try {
+                const formData = new FormData();
+                formData.append('image_file', file);
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                formData.append('csrf_token', csrfToken);
+
+                const response = await fetch('/tweets/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to upload image to RustFS');
+                }
+
+                this.imageUrl = data.url;
+                showXToast('Image uploaded to RustFS');
+            } catch (err) {
+                console.error('RustFS upload failed:', err);
+                this.uploadError = err.message || 'Error uploading to RustFS';
+                showXToast(this.uploadError);
+            } finally {
+                this.isUploading = false;
+                event.target.value = '';
+            }
+        },
+        removeImage() {
+            this.imageUrl = '';
+            this.uploadError = '';
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.value = '';
+            }
         }
     }));
 

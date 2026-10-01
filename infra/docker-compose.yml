@@ -29,14 +29,27 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      rustfs:
+        condition: service_started
     volumes:
       - ../app:/app
       - ./axonasp.toml:/opt/axonasp/config/axonasp.toml:ro
     ports:
       - "8000:80"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/App/Controllers/Home/HomeController.asp > /dev/null || exit 1"]
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1/App/Controllers/Home/HomeController.asp > /dev/null || exit 1" ]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: classicx_rustfs
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./rustfs_data:/data
+

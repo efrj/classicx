@@ -15,26 +15,47 @@ Dim composeUser : Set composeUser = Auth.CurrentUser
                       maxlength="280"
                       rows="2"></textarea>
 
-            <!-- Optional Image URL Input -->
+            <input type="hidden" name="image_url" x-model="imageUrl">
+            <input type="file" x-ref="fileInput" name="image_file" accept="image/png,image/jpeg,image/webp,image/gif" class="d-none" @change="handleFileUpload($event)">
+
+            <!-- Upload progress & status -->
+            <div x-show="isUploading" x-transition class="p-2 mb-2 rounded-3 border border-secondary bg-dark text-info d-flex align-items-center gap-2">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span class="small">Uploading image to RustFS...</span>
+            </div>
+            <div x-show="uploadError" x-transition class="p-2 mb-2 rounded-3 border border-danger bg-dark text-danger small d-flex justify-content-between align-items-center">
+                <span x-text="uploadError"></span>
+                <button type="button" class="btn-close btn-close-white btn-sm" @click="uploadError = ''"></button>
+            </div>
+
+            <!-- Optional Image Preview -->
+            <template x-if="imageUrl">
+                <div class="mb-3 position-relative rounded-3 overflow-hidden border border-secondary" style="max-height: 250px;">
+                    <img :src="imageUrl" class="w-100 object-fit-cover" style="max-height: 250px;" alt="Image preview">
+                    <button type="button" @click="removeImage()" aria-label="Remove image" class="btn btn-sm btn-dark position-absolute top-0 end-0 m-2 rounded-circle" style="opacity: 0.85;">
+                        <i class="bi bi-x fs-6"></i>
+                    </button>
+                    <div class="position-absolute bottom-0 start-0 m-2 badge bg-dark text-secondary border border-secondary small">
+                        <i class="bi bi-cloud-arrow-up text-primary me-1"></i> RustFS
+                    </div>
+                </div>
+            </template>
+
+            <!-- Optional Manual URL Input Fallback -->
             <div x-show="showMediaInput" x-transition class="mb-3">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-link-45deg"></i></span>
-                    <input type="url" name="image_url" aria-label="Image URL" maxlength="255" class="form-control bg-dark text-white border-secondary" placeholder="Paste image URL (e.g. https://...)" x-model="imageUrl">
+                    <input type="url" aria-label="Image URL" maxlength="255" class="form-control bg-dark text-white border-secondary" placeholder="Or paste image URL (e.g. https://...)" x-model="imageUrl">
                 </div>
-                <template x-if="imageUrl">
-                    <div class="mt-2 position-relative rounded-3 overflow-hidden border border-secondary" style="max-height: 200px;">
-                        <img :src="imageUrl" class="w-100 object-fit-cover" style="max-height: 200px;" alt="Image preview">
-                        <button type="button" @click="imageUrl = ''" aria-label="Remove image" class="btn btn-sm btn-dark position-absolute top-0 end-0 m-2 rounded-circle" style="opacity: 0.8;">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </div>
-                </template>
             </div>
 
             <div class="x-compose-actions">
                 <div class="x-compose-icons">
-                    <button type="button" class="x-compose-icon-btn" @click="toggleMedia()" title="Add media URL">
+                    <button type="button" class="x-compose-icon-btn" @click="triggerFileInput()" :disabled="isUploading" title="Upload image to RustFS">
                         <i class="bi bi-image"></i>
+                    </button>
+                    <button type="button" class="x-compose-icon-btn" @click="toggleMedia()" title="Paste image URL">
+                        <i class="bi bi-link-45deg"></i>
                     </button>
                     <button type="button" class="x-compose-icon-btn" @click="content += ' 🚀'" title="Add emoji">
                         <i class="bi bi-emoji-smile"></i>
@@ -54,7 +75,7 @@ Dim composeUser : Set composeUser = Auth.CurrentUser
                         <span class="smaller" :style="'color: ' + progressColor" x-show="charsRemaining <= 20" x-text="charsRemaining"></span>
                     </div>
 
-                    <button type="submit" class="x-btn-tweet-submit" :disabled="!isValid">
+                    <button type="submit" class="x-btn-tweet-submit" :disabled="!isValid || isUploading">
                         Post
                     </button>
                 </div>

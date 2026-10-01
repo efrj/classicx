@@ -126,6 +126,8 @@ Class Route_Helper_Class
                 Select Case a
                     Case "bookmarks":    UrlTo = "/bookmarks": Exit Function
                     Case "createpost":   UrlTo = "/tweets/create": Exit Function
+                    Case "uploadmedia":  UrlTo = "/tweets/upload": Exit Function
+                    Case "uploadpost":   UrlTo = "/tweets/upload": Exit Function
                     Case "deletepost":   UrlTo = "/tweets/delete": Exit Function
                     Case "likepost":     UrlTo = "/tweets/like": Exit Function
                     Case "retweetpost":  UrlTo = "/tweets/retweet": Exit Function

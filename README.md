@@ -26,7 +26,7 @@ Credenciais locais de demonstração: banco `bd_classicx`, usuário/senha `class
 
 ## Funcionalidades demonstradas
 
-Feed geral e de contas seguidas; busca; perfil e abas de posts/respostas/curtidas; publicação de texto e URL de imagem; respostas; exclusão do próprio post; curtidas; reposts (incluindo perfil); favoritos; seguir/deixar de seguir; notificações e marcação de leitura; troca de conta demonstrativa.
+Feed geral e de contas seguidas; busca; perfil e abas de posts/respostas/curtidas; publicação de texto e upload de imagens para armazenamento de objetos RustFS (S3 na porta 9000) com pré-visualização; respostas; exclusão do próprio post; curtidas; reposts (incluindo perfil); favoritos; seguir/deixar de seguir; notificações e marcação de leitura; troca de conta demonstrativa.
 
 As escritas exigem POST e token CSRF. IDs e conteúdo são validados no servidor. A DAL usa `ADODB.Command` com parâmetros; ações relacionadas usam transação e bloqueio para manter contadores consistentes. Respostas a posts excluídos são preservadas como posts independentes.
 
@@ -59,7 +59,7 @@ A versão nova suporta os parâmetros ADO usados pelo projeto. A imagem antiga n
 Este é um protótipo educacional, não um clone completo nem um serviço pronto para publicação:
 
 - Cadastro, autenticação real, hash de senhas, recuperação de conta e edição de perfil ainda precisam ser implementados. O método legado `Authenticate` não deve ser usado para produção: compara texto com texto.
-- Não há mensagens privadas, upload de arquivos, moderação, rate limiting, paginação/infinite scroll nem busca avançada.
+- Não há mensagens privadas, moderação, rate limiting, paginação/infinite scroll nem busca avançada.
 - Trends, Premium e parte dos números iniciais são dados/elementos de demonstração. Os contadores iniciais do seed não necessariamente correspondem às relações existentes.
 - O feed Following mostra posts das contas seguidas; não distribui seus reposts como eventos separados.
 - CSS, fontes, Alpine, Bootstrap e imagens externas dependem de internet. Não foi implementado funcionamento offline.

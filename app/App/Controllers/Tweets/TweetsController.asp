@@ -15,15 +15,44 @@ Class TweetsController
         If Model.Tweet Is Nothing Then Call HttpError("404 Not Found", "Post not found.")
         Set Model.Replies = TweetRepository.GetReplies(id, Auth.CurrentUserId)
     End Sub
+    Public Sub UploadMedia
+        Call RequireWrite()
+        Dim uploadResult
+        Set uploadResult = Storage.ProcessFormUpload("image_file")
+        If Not uploadResult("Success") Then
+            Set uploadResult = Storage.ProcessFormUpload("file")
+        End If
+
+        Response.ContentType = "application/json"
+        If uploadResult("Success") Then
+            Response.Write "{""success"":true,""url"":""" & uploadResult("Url") & """,""relative_url"":""" & uploadResult("RelativeUrl") & """,""filename"":""" & uploadResult("FileName") & """}"
+        Else
+            Response.Status = "400 Bad Request"
+            Dim errText : errText = uploadResult("ErrorMessage")
+            If errText = "" Then errText = "Failed to upload image."
+            Response.Write "{""success"":false,""error"":""" & Replace(Replace(errText, "\", "\\"), """", "\""") & """}"
+        End If
+        Response.End
+    End Sub
     Public Sub CreatePost
         Call RequireWrite()
-        Dim body, media, parent, target, created
+        Dim body, media, parent, target, created, uploadResult
         body = Trim(Request.Form("content"))
         media = Trim(Request.Form("image_url"))
+
+        If media = "" Then
+            Set uploadResult = Storage.ProcessFormUpload("image_file")
+            If uploadResult("Success") Then
+                media = uploadResult("Url")
+            End If
+        End If
+
         If Len(body) = 0 Or Len(body) > 280 Then Call HttpError("400 Bad Request", "Posts must contain 1 to 280 characters.")
         If Len(media) > 255 Then Call HttpError("400 Bad Request", "Image URL is too long.")
         If media <> "" Then
-            If LCase(Left(media, 8)) <> "https://" And LCase(Left(media, 7)) <> "http://" Then Call HttpError("400 Bad Request", "Use an HTTP or HTTPS image URL.")
+            If LCase(Left(media, 8)) <> "https://" And LCase(Left(media, 7)) <> "http://" And Left(media, 9) <> "/uploads/" Then
+                Call HttpError("400 Bad Request", "Use an HTTP, HTTPS or /uploads/ image URL.")
+            End If
         End If
         parent = 0
         If Request.Form("parent_id") <> "" Then parent = PositiveId(Request.Form("parent_id"))
@@ -93,6 +122,7 @@ Select Case LCase(MVC.ActionName)
     Case "bookmarks": Controller.Bookmarks
     Case "show": Controller.Show
     Case "createpost": Controller.CreatePost
+    Case "uploadmedia", "uploadpost": Controller.UploadMedia
     Case "deletepost": Controller.DeletePost
     Case "likepost", "retweetpost", "bookmarkpost": Controller.Toggle LCase(MVC.ActionName)
     Case Else: Call HttpError("404 Not Found", "Action not found.")
