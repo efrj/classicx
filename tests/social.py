@@ -1,11 +1,7 @@
 """Local Docker demo test. Uses two isolated temporary users; removes them afterward."""
 import json
-import subprocess
 import uuid
-from smoke import Client, HOME, TWEETS
-
-def sql(statement):
-    return subprocess.check_output(['docker','exec','classicx_db','mariadb','-N','-B','-uclassicx','-pclassicx','bd_classicx','-e',statement],text=True).strip()
+from smoke import Client, HOME, TWEETS, db_query as sql
 
 def run():
     prefix='qa_'+uuid.uuid4().hex[:10]

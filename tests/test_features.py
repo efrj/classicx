@@ -9,19 +9,12 @@
 """
 import json
 import re
-import subprocess
 import uuid
 from urllib.parse import parse_qs, urlsplit
-from smoke import Client, HOME, TWEETS
+from smoke import Client, HOME, TWEETS, db_query as sql
 
 AUTH = '/App/Controllers/Auth/AuthController.asp'
 USERS = '/App/Controllers/Users/UsersController.asp'
-
-def sql(statement):
-    return subprocess.check_output(
-        ['docker', 'exec', 'classicx_db', 'mariadb', '-N', '-B', '-uclassicx', '-pclassicx', 'bd_classicx', '-e', statement],
-        text=True
-    ).strip()
 
 def run():
     prefix = 'feat_' + uuid.uuid4().hex[:8]

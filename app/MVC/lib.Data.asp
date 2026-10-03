@@ -67,6 +67,11 @@ Class Database_Class
         Set m_connection = Server.CreateObject("ADODB.Connection")
         Dim connStr : connStr = m_connection_string
         If connStr = "" Or IsEmpty(connStr) Then
+            If IsObject(AppConfig) Then
+                If Not AppConfig Is Nothing Then connStr = AppConfig.ConnectionString
+            End If
+        End If
+        If connStr = "" Or IsEmpty(connStr) Then
             connStr = "DRIVER={MySQL ODBC 3.51 Driver};OPTION=3;DATABASE=bd_classicx;PWD=classicx;SERVER=db;UID=classicx;PORT=3306"
         End If
         m_connection.Open connStr

@@ -8,7 +8,19 @@ import urllib.parse
 import urllib.request
 import uuid
 import os
-BASE = os.environ.get('CLASSICX_URL', 'http://localhost:8000')
+import subprocess
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "infra")))
+from classicx_env import value
+BASE = value('CLASSICX_URL', 'http://localhost:8000')
+def db_query(statement):
+    user = value('MYSQL_USER', 'classicx')
+    password = value('MYSQL_PASSWORD', 'classicx')
+    database = value('MYSQL_DATABASE', 'bd_classicx')
+    return subprocess.check_output(
+        ['docker', 'exec', 'classicx_db', 'mariadb', '-N', '-B', f'-u{user}', f'-p{password}', database, '-e', statement],
+        text=True,
+    ).strip()
 class Client:
     def __init__(self):
         self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))

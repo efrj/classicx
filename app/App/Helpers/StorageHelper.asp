@@ -11,6 +11,13 @@ Class StorageHelper_Class
         m_internalUrl = "http://rustfs:9000"
         m_publicUrl   = "http://localhost:9000"
         m_bucketName  = "uploads"
+        If IsObject(AppConfig) Then
+            If Not AppConfig Is Nothing Then
+                m_internalUrl = AppConfig.RustfsInternalUrl
+                m_publicUrl = AppConfig.RustfsPublicUrl
+                m_bucketName = AppConfig.RustfsBucket
+            End If
+        End If
     End Sub
 
     Public Property Get InternalUrl

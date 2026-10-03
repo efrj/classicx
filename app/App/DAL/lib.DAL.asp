@@ -21,7 +21,15 @@ Function DAL_GetConnection()
     End If
     If needOpen Then
         Set DAL_Conn = Server.CreateObject("ADODB.Connection")
-        DAL_Conn.Open "DRIVER={MySQL ODBC 3.51 Driver};OPTION=3;DATABASE=bd_classicx;PWD=classicx;SERVER=db;UID=classicx;PORT=3306"
+        Dim connStr
+        connStr = ""
+        If IsObject(AppConfig) Then
+            If Not AppConfig Is Nothing Then connStr = AppConfig.ConnectionString
+        End If
+        If connStr = "" Or IsEmpty(connStr) Then
+            connStr = "DRIVER={MySQL ODBC 3.51 Driver};OPTION=3;DATABASE=bd_classicx;PWD=classicx;SERVER=db;UID=classicx;PORT=3306"
+        End If
+        DAL_Conn.Open connStr
     End If
     Set DAL_GetConnection = DAL_Conn
 End Function

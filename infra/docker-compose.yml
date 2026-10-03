@@ -1,3 +1,4 @@
+# Valores vêm de infra/.env. Sem o arquivo, os padrões mantêm o ambiente local.
 services:
   db:
     image: mariadb:10.11
@@ -6,17 +7,17 @@ services:
     command: >
       --lower_case_table_names=1 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max_connections=1000 --wait_timeout=60 --interactive_timeout=60
     environment:
-      MYSQL_DATABASE: bd_classicx
-      MYSQL_USER: classicx
-      MYSQL_PASSWORD: "classicx"
-      MYSQL_ROOT_PASSWORD: "classicx"
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-bd_classicx}
+      MYSQL_USER: ${MYSQL_USER:-classicx}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-classicx}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-classicx}
     volumes:
       - ./dbdata:/var/lib/mysql
       - ./database_setup.sql:/docker-entrypoint-initdb.d/001-classicx.sql:ro
     ports:
-      - "3306:3306"
+      - "${DB_BIND:-0.0.0.0}:${DB_PORT:-3306}:3306"
     healthcheck:
-      test: [ "CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-pclassicx" ]
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-classicx}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,13 +32,22 @@ services:
         condition: service_healthy
       rustfs:
         condition: service_started
+    environment:
+      CLASSICX_DB_HOST: ${CLASSICX_DB_HOST:-db}
+      CLASSICX_DB_PORT: ${CLASSICX_DB_PORT:-3306}
+      CLASSICX_DB_NAME: ${CLASSICX_DB_NAME:-${MYSQL_DATABASE:-bd_classicx}}
+      CLASSICX_DB_USER: ${CLASSICX_DB_USER:-${MYSQL_USER:-classicx}}
+      CLASSICX_DB_PASSWORD: ${CLASSICX_DB_PASSWORD:-${MYSQL_PASSWORD:-classicx}}
+      CLASSICX_RUSTFS_INTERNAL_URL: ${CLASSICX_RUSTFS_INTERNAL_URL:-http://rustfs:9000}
+      CLASSICX_RUSTFS_PUBLIC_URL: ${CLASSICX_RUSTFS_PUBLIC_URL:-http://localhost:9000}
+      CLASSICX_RUSTFS_BUCKET: ${CLASSICX_RUSTFS_BUCKET:-uploads}
     volumes:
       - ../app:/app
       - ./axonasp.toml:/opt/axonasp/config/axonasp.toml:ro
     ports:
-      - "8000:80"
+      - "${HTTP_BIND:-0.0.0.0}:${HTTP_PORT:-8000}:80"
     healthcheck:
-      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1/App/Controllers/Home/HomeController.asp > /dev/null || exit 1" ]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/App/Controllers/Home/HomeController.asp > /dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -47,9 +57,11 @@ services:
     image: rustfs/rustfs:latest
     container_name: classicx_rustfs
     restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${RUSTFS_BIND:-0.0.0.0}:${RUSTFS_PORT:-9000}:9000"
+      - "${RUSTFS_CONSOLE_BIND:-0.0.0.0}:${RUSTFS_CONSOLE_PORT:-9001}:9001"
     volumes:
       - ./rustfs_data:/data
-

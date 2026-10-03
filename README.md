@@ -12,7 +12,31 @@ Abra http://localhost:8000. O AXONASP 2.3.24 está fixado por digest no Compose 
 
 O banco usa `infra/dbdata`. O script `infra/database_setup.sql` é executado automaticamente **somente na inicialização de um diretório de dados vazio**. Não execute esse script manualmente contra um banco existente: ele contém `DROP TABLE`. O banco existente não foi reinicializado durante as correções.
 
-Credenciais locais de demonstração: banco `bd_classicx`, usuário/senha `classicx`. A aplicação abre automaticamente a conta de demonstração 1. O menu permite trocar de conta; “Reset demo account” retorna à conta inicial. Isso não é autenticação para usuários reais.
+Credenciais locais de demonstração, usadas também quando `infra/.env` não existe: banco `bd_classicx`, usuário/senha `classicx`. A aplicação abre automaticamente a conta de demonstração 1. O menu permite trocar de conta; “Reset demo account” retorna à conta inicial. Isso não é autenticação para usuários reais.
+
+## Publicar
+
+Copie `infra/.env.example` para `infra/.env` e ajuste host, portas e senhas antes do primeiro `docker compose up`. O Compose lê esse arquivo porque ele fica na mesma pasta do `docker-compose.yml`. Sem o arquivo, o ambiente local continua em `http://localhost:8000`, com o RustFS público em `http://localhost:9000` e o banco no host interno `db`. Depois de mudar o `.env`, rode o mesmo `up -d` para os containers receberem os valores novos.
+
+`CLASSICX_RUSTFS_PUBLIC_URL` é o endereço que o navegador usa para baixar as imagens. Aponte para o RustFS, por exemplo `http://SEU_IP:9000`. Se esse endereço for o próprio ClassicX, o caminho `/uploads` volta para a aplicação e o redirecionamento se repete. URLs já gravadas no banco permanecem com o host antigo; os uploads novos usam a URL configurada. A coluna `image_url` aceita 255 caracteres.
+
+`MYSQL_*` e `CLASSICX_DB_*` precisam concordar. Essas senhas do MariaDB só são criadas na primeira inicialização de `infra/dbdata`. Para trocar a senha de um volume que já existe, altere o usuário no banco e depois atualize o `.env`:
+
+```sh
+docker exec -it classicx_db mariadb -uroot -p
+ALTER USER 'classicx'@'%' IDENTIFIED BY 'nova-senha';
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'nova-senha-root';
+```
+
+No VPS, publique o banco e o console do RustFS só em `127.0.0.1` (`DB_BIND` e `RUSTFS_CONSOLE_BIND`) e troque `RUSTFS_ACCESS_KEY` e `RUSTFS_SECRET_KEY`. Senhas com `$`, aspas ou `;` quebram a interpolação do Compose ou a string ODBC. O arquivo `infra/axonasp.toml` não é a conexão da aplicação.
+
+Em um servidor novo, depois que o RustFS subir, crie o bucket público:
+
+```sh
+python3 infra/init_rustfs.py
+```
+
+O script lê `infra/.env`. A chave padrão `rustfsadmin` existe só para o ambiente local.
 
 ## Estrutura
 
@@ -39,7 +63,7 @@ python3 tests/smoke.py
 python3 tests/social.py
 ```
 
-O primeiro teste cobre páginas, 40 refreshes, 80 leituras simultâneas, entradas inválidas, CSRF, posts/respostas, reações, favoritos, autorização de exclusão e curtidas concorrentes. Cria posts temporários e os remove no final. `CLASSICX_URL` permite mudar a URL base desse teste.
+O primeiro teste cobre páginas, 40 refreshes, 80 leituras simultâneas, entradas inválidas, CSRF, posts/respostas, reações, favoritos, autorização de exclusão e curtidas concorrentes. Cria posts temporários e os remove no final. `CLASSICX_URL` muda a URL base. Os testes que consultam o MariaDB leem `MYSQL_USER`, `MYSQL_PASSWORD` e `MYSQL_DATABASE` de `infra/.env`, com os padrões locais se o arquivo não existir.
 
 O segundo exige a CLI Docker e os containers locais `classicx_db`/`classicx_web`. Cria duas contas temporárias e verifica seguir, notificação única, leitura, feed Following, repost no perfil e reset da conta. Remove essas contas e seus dados ao concluir.
 
@@ -63,7 +87,7 @@ Este é um protótipo educacional, não um clone completo nem um serviço pronto
 - Trends, Premium e parte dos números iniciais são dados/elementos de demonstração. Os contadores iniciais do seed não necessariamente correspondem às relações existentes.
 - O feed Following mostra posts das contas seguidas; não distribui seus reposts como eventos separados.
 - CSS, fontes, Alpine, Bootstrap e imagens externas dependem de internet. Não foi implementado funcionamento offline.
-- Para exposição pública, substituir credenciais locais, implementar autenticação real e gestão de segredos, HTTPS, backups, migrações incrementais, limites de uso e configuração de erros adequada. O modo de depuração está habilitado para estudo.
+- Para exposição pública, use `infra/.env` para senhas, portas e a URL do RustFS. Ainda faltam autenticação real, HTTPS, backups, migrações incrementais, limites de uso e uma configuração de erros adequada. O modo de depuração está habilitado para estudo.
 - Testes de integração e verificações visuais cobrem os fluxos descritos, não garantem ausência de todos os defeitos do runtime.
 
 ## Créditos

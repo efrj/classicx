@@ -3,6 +3,7 @@
 Initialize RustFS bucket and public access policy for ClassicX media uploads.
 """
 
+import os
 import sys
 import time
 import urllib.request
@@ -10,6 +11,9 @@ import urllib.error
 import hmac
 import hashlib
 from datetime import datetime, timezone
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from classicx_env import load_env, value
 
 def sign(key, msg):
     return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
@@ -57,13 +61,13 @@ def send_s3_request(host, method, uri, query="", body=b"", access_key="rustfsadm
 
     return urllib.request.urlopen(req)
 
-def init_rustfs(host="localhost:9000", bucket="uploads"):
+def init_rustfs(host="localhost:9000", bucket="uploads", access_key="rustfsadmin", secret_key="rustfsadmin"):
     print(f"Connecting to RustFS at {host}...")
     for attempt in range(15):
         try:
             # 1. Create bucket if not exists
             try:
-                with send_s3_request(host, "PUT", f"/{bucket}") as resp:
+                with send_s3_request(host, "PUT", f"/{bucket}", access_key=access_key, secret_key=secret_key) as resp:
                     print(f"Bucket '{bucket}' created (HTTP {resp.status}).")
             except urllib.error.HTTPError as e:
                 if e.code in (409, 200):
@@ -93,7 +97,7 @@ def init_rustfs(host="localhost:9000", bucket="uploads"):
   ]
 }}"""
             try:
-                with send_s3_request(host, "PUT", f"/{bucket}", query="policy=", body=policy.encode("utf-8")) as resp:
+                with send_s3_request(host, "PUT", f"/{bucket}", query="policy=", body=policy.encode("utf-8"), access_key=access_key, secret_key=secret_key) as resp:
                     print(f"Public policy applied to '{bucket}' (HTTP {resp.status}).")
             except urllib.error.HTTPError as e:
                 print(f"Policy update HTTP {e.code}: {e.read().decode(errors='ignore')}")
@@ -108,7 +112,12 @@ def init_rustfs(host="localhost:9000", bucket="uploads"):
     return False
 
 if __name__ == "__main__":
-    host = sys.argv[1] if len(sys.argv) > 1 else "localhost:9000"
-    bucket = sys.argv[2] if len(sys.argv) > 2 else "uploads"
-    success = init_rustfs(host, bucket)
+    load_env()
+    host = sys.argv[1] if len(sys.argv) > 1 else value("CLASSICX_RUSTFS_INIT_HOST", "")
+    if not host:
+        host = "127.0.0.1:" + value("RUSTFS_PORT", "9000")
+    bucket = sys.argv[2] if len(sys.argv) > 2 else value("CLASSICX_RUSTFS_BUCKET", "uploads")
+    access_key = value("RUSTFS_ACCESS_KEY", "rustfsadmin")
+    secret_key = value("RUSTFS_SECRET_KEY", "rustfsadmin")
+    success = init_rustfs(host, bucket, access_key, secret_key)
     sys.exit(0 if success else 1)

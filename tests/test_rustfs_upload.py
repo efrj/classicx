@@ -3,15 +3,18 @@
 Test post image uploads to RustFS in ClassicX.
 """
 
+import os
 import re
 import sys
-import io
 import urllib.request
 import urllib.parse
 import http.cookiejar
 
-BASE_URL = "http://localhost:8000"
-RUSTFS_URL = "http://localhost:9000"
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "infra")))
+from classicx_env import value
+
+BASE_URL = value("CLASSICX_URL", "http://localhost:8000")
+RUSTFS_PUBLIC = value("CLASSICX_RUSTFS_PUBLIC_URL", "http://localhost:9000").rstrip("/")
 
 def get_csrf_token(html):
     m = re.search(r'name=["\']csrf-token["\']\s+content=["\']([^"\']+)["\']', html)
@@ -84,7 +87,7 @@ def run_tests():
     data = json.loads(upload_json_str)
     assert data.get("success") is True, f"Upload unsuccessful: {data}"
     rustfs_img_url = data.get("url")
-    assert "9000/uploads/" in rustfs_img_url, f"Unexpected image URL: {rustfs_img_url}"
+    assert rustfs_img_url.startswith(RUSTFS_PUBLIC + "/uploads/"), f"Unexpected image URL: {rustfs_img_url}"
 
     print(f"4. Verifying image can be downloaded directly from RustFS ({rustfs_img_url})...")
     with urllib.request.urlopen(rustfs_img_url) as img_resp:
@@ -116,7 +119,7 @@ def run_tests():
     post_resp2 = opener.open(req2)
     post_html2 = post_resp2.read().decode("utf-8")
     assert direct_post_text in post_html2, "Direct multipart post content not found in response"
-    assert "http://localhost:9000/uploads/" in post_html2, "RustFS image URL not found in post detail HTML"
+    assert (RUSTFS_PUBLIC + "/uploads/") in post_html2, "RustFS image URL not found in post detail HTML"
     print("Direct multipart post created and image rendered successfully!")
 
     print("\nALL RUSTFS UPLOAD TESTS PASSED SUCCESSFULLY! 🎉")
