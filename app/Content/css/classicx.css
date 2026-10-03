@@ -193,6 +193,8 @@ a:hover {
 }
 .x-compose-content {
   flex: 1;
+  position: relative;
+  min-width: 0;
 }
 .x-compose-textarea {
   background: transparent;
@@ -237,6 +239,91 @@ a:hover {
 }
 .x-compose-icon-btn:hover {
   background-color: rgba(29, 155, 240, 0.1);
+}
+
+/* Keep the file picker programmatically clickable without rendering a native control. */
+.x-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.x-upload-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--x-border);
+  border-radius: 12px;
+  background: var(--x-card-bg);
+  color: var(--x-blue);
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+.x-upload-status-error {
+  justify-content: space-between;
+  color: #f4212e;
+  border-color: rgba(244, 33, 46, 0.45);
+}
+.x-upload-status-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.x-upload-dismiss,
+.x-upload-remove {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--x-text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.x-upload-dismiss:hover,
+.x-upload-remove:hover {
+  background: var(--x-hover-bg);
+}
+.x-upload-preview {
+  position: relative;
+  margin-bottom: 12px;
+  border: 1px solid var(--x-border);
+  border-radius: 16px;
+  overflow: hidden;
+  max-height: 250px;
+}
+.x-upload-preview img {
+  display: block;
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+}
+.x-upload-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 20, 25, 0.82);
+}
+.x-upload-badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border: 1px solid var(--x-border);
+  border-radius: 9999px;
+  background: rgba(15, 20, 25, 0.82);
+  color: var(--x-text-muted);
+  font-size: 0.75rem;
 }
 
 .x-btn-tweet-submit {
@@ -560,6 +647,69 @@ a:hover {
   height: 100%;
   object-fit: cover;
 }
+
+.x-edit-hero {
+  position: relative;
+  margin-bottom: 20px;
+  padding-bottom: 52px;
+}
+.x-edit-banner {
+  position: relative;
+  height: 156px;
+  background-color: #333639;
+  background-size: cover;
+  background-position: center;
+}
+.x-edit-avatar {
+  position: absolute;
+  left: 16px;
+  bottom: 0;
+  width: 104px;
+  height: 104px;
+  border: 4px solid #000;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+}
+.x-edit-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.x-edit-media-btn {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 9999px;
+  background: rgba(15, 20, 25, 0.75);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.x-edit-media-btn:hover:not(:disabled) {
+  background: rgba(15, 20, 25, 0.9);
+}
+.x-edit-banner > .x-edit-media-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.x-edit-avatar .x-edit-media-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  transform: translate(-50%, -50%);
+}
+.x-profile-bio-input {
+  min-height: 200px;
+  height: 200px;
+  resize: vertical;
+}
 .x-profile-actions {
   display: flex;
   justify-content: flex-end;
@@ -674,14 +824,14 @@ a:hover {
 
 [x-cloak] { display: none !important; }
 :focus-visible { outline: 2px solid var(--x-blue); outline-offset: 3px; }
-button:disabled { opacity: .55; cursor: wait; }
+button:disabled { opacity: .55; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
 /* Allow the feed to shrink alongside the navigation on narrow screens. */
 .x-center-col { min-width: 0; }
-.x-compose-content { min-width: 0; }
+
 .x-compose-actions { flex-wrap: wrap; gap: 8px; }
 .x-tweet-text { overflow-wrap: anywhere; }
 @media (max-width: 575px) {

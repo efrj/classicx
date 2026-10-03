@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- ClassicX Dark Theme CSS -->
-    <link rel="stylesheet" href="<%= Routes.StylesheetsUrl %>classicx.css?v=20260927.2">
+    <link rel="stylesheet" href="<%= Routes.StylesheetsUrl %>classicx.css?v=20261002.2">
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- ClassicX JS -->
-    <script src="<%= Routes.ContentUrl %>js/classicx.js?v=20260927.2"></script>
+    <script src="<%= Routes.ContentUrl %>js/classicx.js?v=20261002.2"></script>
 </head>
 
 <body id="MVC-<%= H(MVC.ControllerName) & "-" & H(MVC.ActionName) %>">

@@ -101,31 +101,50 @@ For Each pTab In Array("posts", "replies", "likes")
 <!-- Edit Profile Modal (Only for current user) -->
 <% If Model.ProfileUser.Id = Auth.CurrentUserId Then %>
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content bg-black border border-secondary text-white rounded-4 shadow-lg">
-            <form method="POST" action="<%= Routes.UrlTo("Users", "UpdateProfilePost", Empty) %>">
+            <form method="POST" action="<%= Routes.UrlTo("Users", "UpdateProfilePost", Empty) %>" x-data="profileEditor()" @submit="prepareSubmit($event)">
                 <input type="hidden" name="csrf_token" value="<%= H(CsrfToken()) %>">
+                <input type="hidden" name="banner_url" value="<%= H(Model.ProfileUser.BannerUrl) %>">
+                <input type="hidden" name="avatar_url" value="<%= H(Model.ProfileUser.AvatarUrl) %>">
                 <div class="modal-header border-secondary p-3">
                     <button type="button" class="btn-close btn-close-white me-2" data-bs-dismiss="modal" aria-label="Close"></button>
                     <h5 class="modal-title fw-bold fs-6 flex-grow-1" id="editProfileModalLabel">Edit profile</h5>
-                    <button type="submit" class="btn btn-light rounded-pill btn-sm fw-bold px-3">Save</button>
+                    <button type="submit" class="btn btn-light rounded-pill btn-sm fw-bold px-3" :disabled="uploading !== ''">Save</button>
                 </div>
-                <div class="modal-body p-3">
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small fw-bold mb-1">Banner Image URL</label>
-                        <input type="url" name="banner_url" class="form-control bg-black text-white border-secondary" value="<%= H(Model.ProfileUser.BannerUrl) %>" placeholder="https://example.com/banner.jpg" maxlength="255">
+                <div class="modal-body p-0">
+                    <div class="x-edit-hero">
+                        <div class="x-edit-banner" <% If Model.ProfileUser.BannerUrl <> "" Then %>style="background-image: url('<%= H(Model.ProfileUser.BannerUrl) %>');"<% End If %> :style="bannerStyle">
+                            <button type="button" class="x-edit-media-btn" @click="pick('banner')" :disabled="uploading !== ''" aria-label="Upload banner image">
+                                <i class="bi bi-camera" x-show="uploading !== 'banner'"></i>
+                                <span x-show="uploading === 'banner'" x-cloak class="spinner-border spinner-border-sm" role="status" aria-label="Uploading banner"></span>
+                            </button>
+                            <input type="file" x-ref="bannerFile" class="x-file-input" accept="image/png,image/jpeg,image/webp,image/gif" @change="upload('banner', $event)">
+                        </div>
+                        <div class="x-edit-avatar">
+                            <img src="<%= H(Model.ProfileUser.AvatarUrl) %>" :src="avatarUrl" alt="<%= H(Model.ProfileUser.Name) %>">
+                            <button type="button" class="x-edit-media-btn" @click="pick('avatar')" :disabled="uploading !== ''" aria-label="Upload avatar image">
+                                <i class="bi bi-camera" x-show="uploading !== 'avatar'"></i>
+                                <span x-show="uploading === 'avatar'" x-cloak class="spinner-border spinner-border-sm" role="status" aria-label="Uploading avatar"></span>
+                            </button>
+                            <input type="file" x-ref="avatarFile" class="x-file-input" accept="image/png,image/jpeg,image/webp,image/gif" @change="upload('avatar', $event)">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small fw-bold mb-1">Avatar Image URL</label>
-                        <input type="url" name="avatar_url" class="form-control bg-black text-white border-secondary" value="<%= H(Model.ProfileUser.AvatarUrl) %>" placeholder="https://example.com/avatar.jpg" maxlength="255">
+                    <div class="px-3 pb-3">
+                    <div x-show="uploadError" x-cloak class="x-upload-status x-upload-status-error mb-3" role="alert">
+                        <span class="x-upload-status-text" x-text="uploadError"></span>
+                        <button type="button" class="x-upload-dismiss" @click.prevent="dismissUploadError()" aria-label="Dismiss upload error">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
+                        </button>
                     </div>
                     <div class="form-floating mb-3">
                         <input type="text" name="name" id="profileNameInput" class="form-control bg-black text-white border-secondary" value="<%= H(Model.ProfileUser.Name) %>" required maxlength="50" placeholder="Name">
                         <label for="profileNameInput" class="text-secondary">Name</label>
                     </div>
-                    <div class="form-floating mb-3">
-                        <textarea name="bio" id="profileBioInput" class="form-control bg-black text-white border-secondary" style="height: 100px;" maxlength="160" placeholder="Bio"><%= H(Model.ProfileUser.Bio) %></textarea>
-                        <label for="profileBioInput" class="text-secondary">Bio</label>
+                    <div class="mb-3">
+                        <label for="profileBioInput" class="form-label text-secondary small fw-bold mb-1">Bio</label>
+                        <textarea name="bio" id="profileBioInput" class="form-control bg-black text-white border-secondary x-profile-bio-input" maxlength="160" placeholder="Bio" @input="bioCount = $event.target.value.length"><%= H(Model.ProfileUser.Bio) %></textarea>
+                        <div class="text-secondary small text-end mt-1"><span x-text="bioCount"><%= Len(Model.ProfileUser.Bio) %></span> / 160</div>
                     </div>
                     <div class="form-floating mb-3">
                         <input type="text" name="location" id="profileLocInput" class="form-control bg-black text-white border-secondary" value="<%= H(Model.ProfileUser.Location) %>" maxlength="30" placeholder="Location">
@@ -134,6 +153,7 @@ For Each pTab In Array("posts", "replies", "likes")
                     <div class="form-floating mb-3">
                         <input type="text" name="website" id="profileWebInput" class="form-control bg-black text-white border-secondary" value="<%= H(Model.ProfileUser.Website) %>" maxlength="100" placeholder="Website">
                         <label for="profileWebInput" class="text-secondary">Website</label>
+                    </div>
                     </div>
                 </div>
             </form>
